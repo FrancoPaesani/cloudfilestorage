@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta, timezone
+
 import bcrypt
-from fastapi import HTTPException
 import jwt
+from fastapi import HTTPException
 from sqlmodel import Session, select
+
 from config.utils import AUTH_JWT_KEY
 from models.auth import User, UserSession
 from schemas.auth import UserLogin, UserRegister
 from services.user import UserService
+
 
 class SessionService:
     def generate_jwt(self, user: str):
@@ -17,20 +20,21 @@ class SessionService:
             algorithm="HS256",
         )
         return (jwt_content, expires_date)
-    
+
     def get_session(self, jwt_content: str, session: Session):
-        session_db = session.exec(select(UserSession).where(UserSession.jwt == jwt_content)).first()
+        session_db = session.exec(
+            select(UserSession).where(UserSession.jwt == jwt_content)
+        ).first()
         return session_db
-    
+
     def save_session(self, user_session: UserSession, session: Session):
         session.add(user_session)
         session.commit()
         session.refresh(user_session)
         return user_session
-    
+
     def delete_session(self, user_session: UserSession, session: Session):
         session.delete(user_session)
-
 
 
 class HashService:
@@ -58,20 +62,16 @@ class AuthService:
         user_db: User = UserService().get_user(user.user, session)
 
         if user_db is None:
-            raise HTTPException(
-                status_code=403, detail="Authentication failed"
-            )
+            raise HTTPException(status_code=403, detail="Authentication failed")
 
         auth_valid = HashService().validate_password(user.password, user_db.password)
 
-        if not(auth_valid):
-            raise HTTPException(
-                status_code=403, detail="Authentication failed"
-            )
+        if not (auth_valid):
+            raise HTTPException(status_code=403, detail="Authentication failed")
 
         user_session_db = UserService().get_user_session(user_db.id, session)
         if user_session_db is not None:
-            SessionService().delete_session(user_session_db,session)
+            SessionService().delete_session(user_session_db, session)
 
         jwt_content, expires_date = SessionService().generate_jwt(user.user)
 

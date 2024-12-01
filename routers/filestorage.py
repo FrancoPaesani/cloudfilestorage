@@ -1,5 +1,6 @@
 from typing import Annotated
-from fastapi import APIRouter, Cookie, Depends, File, Request, UploadFile
+
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
@@ -17,12 +18,21 @@ file_storage_router = APIRouter(prefix="/fs", tags=["File Storage"])
 
 @file_storage_router.post("/file/", dependencies=[Depends(validate_login)])
 def upload(
-    user: User,
+    request: Request,
     file_path: str,
+    file_name: str,
     file: Annotated[UploadFile, File()],
     session: Session = Depends(get_session),
 ):
-    file_info = FileService().parse_file(file_path=file_path, file=file)
+    user = request.state.user
+    file_info = FileService().parse_file(file_path=file_path, file_name=file_name, file=file)
+
+    reachs_limit = UserStorageService().validate_storage_limit(
+        user=user, file_size=file_info.file_size, session=session
+    )
+
+    if reachs_limit:
+        return JSONResponse(content="Limit storage reached: " + str(user.max_storage_size_mb) + "MB")
 
     if UserStorageService().file_exists(file=file_info, session=session):
         return JSONResponse(content="File path already exists", status_code=400)
@@ -45,9 +55,9 @@ def upload(
 @file_storage_router.get("/stats/", dependencies=[Depends(validate_login)])
 def stats(request: Request, session: Session = Depends(get_session)):
     user: User = request.state.user
-    if not(user.is_admin):
+    if not (user.is_admin):
         return JSONResponse(content={}, status_code=403)
-    
+
     storage_per_user_cloud: list[(UserStorage, CloudProvider)] = (
         UserStorageService().get_storage_per_user(session)
     )
@@ -57,7 +67,7 @@ def stats(request: Request, session: Session = Depends(get_session)):
                 user_id=x[0].user_id,
                 cloud_provider_id=x[0].cloud_provider_id,
                 cloud_provider_name=x[1].name,
-                occupied_size=x[0].occupied_size
+                occupied_size=x[0].occupied_size,
             ),
             storage_per_user_cloud,
         )

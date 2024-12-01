@@ -1,14 +1,35 @@
 from decimal import Decimal
-from pydantic import BaseModel
+import re
 
 
-#TODO: validate file_path and file_name with regex
+from pydantic import BaseModel, validator
+
+
 class FileInfo(BaseModel):
     file_path: str
     file_name: str
-    file_size: float
+    file_size: Decimal
     file_extension: str
     file_content: bytes
+
+    @validator("file_path")
+    def validate_path(cls, v):
+        if v == '':
+            return v
+        pattern = r'^(/[a-zA-Z0-9]+)+/$'        
+        if bool(re.match(pattern, v)):
+            return v
+        else: 
+            raise ValueError("Invalid path")
+    
+    @validator("file_name")
+    def validate_name(cls, v):
+        pattern = r'^[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
+        if bool(re.match(pattern, v)):
+            return v
+        else:
+            raise ValueError("Invalid name")
+
 
 class UserStats(BaseModel):
     user_id: int

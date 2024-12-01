@@ -1,24 +1,22 @@
-## INTRODUCCION
+## INTRODUCTION
+This repository contains the API code developed using python and fastapi. The service allows users to upload files to the cloud and uses a failover method in order to abstract the user from the implementation.
+It stores the data into a local postgresql instance and uses jwt authentication for every request to the file system.
 
-
-## TECNOLOGIAS
-El proyecto está creado con:
+## TECHNOLOGIES
+The project uses:
 * <b>python</b> version: 3.11.5
-* <b>fastapi</b>: Framework para la creación de la API.
-* <b>docker</b>:  Engine version: 27.2.0. Docker Desktop 4.34.3.
+* <b>fastapi</b>: Web framework.
+* <b>docker</b>: Container that holds the API.
 
-Ver archivo requirements.txt para un detalle de todas las dependencias con su versión.
+For a detailed view of the used libraries see 'requirements.txt'
 
-## COMO INICIAR
-Para instalar y correr este proyecto es necesario tener instalado docker en la máquina.
+## HOW TO USE
+In order to run this project you must install docker in your host machine.
 
-#### 1. Crear el archivo .env con las variables necesarias
+#### 1. Create the '.env' file with all the necesary variables
 
-#### 2. Iniciar el contenedor con el siguiente comando:
+#### 2. Run the app with the following command:
 
 ```
 docker-compose up --build
 ```
-
-## ARQUITECTURA
-

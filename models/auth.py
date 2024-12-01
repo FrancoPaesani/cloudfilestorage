@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+
 from sqlmodel import Field, SQLModel
 
 from config.database import CFS_METADATA
@@ -14,9 +15,10 @@ class User(SQLModel, table=True):
     name: str
     email: str
     password: str
-    max_storage_size_mb: Decimal = Field(decimal_places=2)
+    max_storage_size_mb: Decimal = Field(default=5000, decimal_places=6)
     created_date: datetime = Field(default_factory=datetime.now)
     is_admin: bool = Field(default=False)
+
 
 class UserSession(SQLModel, table=True):
     metadata = CFS_METADATA

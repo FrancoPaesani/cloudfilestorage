@@ -8,21 +8,25 @@ from services.dropbox import DropboxService
 
 
 class FileService:
-    def parse_file(self, file_path, file: UploadFile) -> FileInfo:
+    def parse_file(self, file_path, file_name, file: UploadFile) -> FileInfo:
         file_content = file.file.read()
-        file_size = file.size
-        file_name = file.filename
+        file_size = (file.size / (1<<20))
 
         file_extension = file_name.split(".")
         file_extension = file_extension[len(file_extension) - 1]
 
-        return FileInfo(
-            file_path=file_path,
-            file_name=file_name,
-            file_size=file_size,
-            file_extension=file_extension,
-            file_content=file_content,
-        )
+        try:
+            file_info = FileInfo(
+                file_path=file_path,
+                file_name=file_name,
+                file_size=file_size,
+                file_extension=file_extension,
+                file_content=file_content,
+            )
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=str(e))
+    
+        return file_info 
 
 
 class StorageService:
