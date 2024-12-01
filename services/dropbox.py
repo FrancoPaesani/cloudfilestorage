@@ -29,17 +29,13 @@ class DropboxService(CloudProviderService):
         return "DROPBOX"
 
     def refresh_access_token(self, app_key, app_secret, refresh_token):
-        try:
-            dbx = dropbox.Dropbox(
-                oauth2_refresh_token=refresh_token,
-                app_key=app_key,
-                app_secret=app_secret,
-            )
+        dbx = dropbox.Dropbox(
+            oauth2_refresh_token=refresh_token,
+            app_key=app_key,
+            app_secret=app_secret,
+        )
 
-            dbx.users_get_current_account()
+        dbx.users_get_current_account()
 
-            new_access_token = dbx._oauth2_access_token
-            return new_access_token
-        except Exception as e:
-            print(f"Error refreshing access token: {e}")
-            return None
+        new_access_token = dbx._oauth2_access_token
+        return new_access_token
