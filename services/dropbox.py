@@ -1,5 +1,8 @@
 import dropbox
+from fastapi import Depends
+from sqlmodel import Session
 
+from config.database import get_session
 from config.utils import (
     DROPBOX_ACCESS_TOKEN,
     DROPBOX_APP_KEY,
@@ -23,9 +26,8 @@ class DropboxService(CloudProviderService):
         self.dbx_connection = dropbox.Dropbox(oauth2_access_token=new_access_token)
         result = self.dbx_connection.files_upload(file_content, file_path)
 
-        return 1  # TODO: traer de la DB el codigo del CP
+        return "DROPBOX"
 
-    # TODO: check function
     def refresh_access_token(self, app_key, app_secret, refresh_token):
         try:
             dbx = dropbox.Dropbox(

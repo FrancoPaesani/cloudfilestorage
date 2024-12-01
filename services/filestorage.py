@@ -1,6 +1,6 @@
 from fastapi import HTTPException, UploadFile
 
-from models.filestorage import UserFiles
+from models.filestorage import CloudProvider, UserFiles
 from schemas.filestorage import FileInfo
 from services.azure import AzureService
 from services.cloudProvider import CloudProviderService
@@ -32,6 +32,9 @@ class FileService:
 class StorageService:
     cloud_providers: list[CloudProviderService] = [DropboxService(), AzureService()]
 
+    def __init__(self, providers: CloudProvider):
+        self.providers = providers    
+
     def upload_file(self, file: FileInfo, user_id: int):
         intentos = []
         cloud_provider_id = None
@@ -40,9 +43,10 @@ class StorageService:
         for cloud_provider in self.cloud_providers:
             if cloud_provider not in intentos:
                 try:
-                    cloud_provider_id = cloud_provider.upload_file(
+                    cloud_provider_name = cloud_provider.upload_file(
                         file_path=file_full_path, file_content=file.file_content
                     )
+                    cloud_provider_id = list(filter(lambda x: x.name == cloud_provider_name,self.providers))[0].id
                     break
                 except Exception as e:
                     intentos.append(cloud_provider)

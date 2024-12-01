@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from email_validator import EmailNotValidError, validate_email
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from sqlmodel import Field
 
 
@@ -12,7 +12,7 @@ class UserRegister(BaseModel):
     email: str = Field(max_length=350)
     password: str
 
-    @validator("email")
+    @field_validator("email")
     def valid_mail(cls, v):
         try:
             validate_email(v, check_deliverability=True)
@@ -20,7 +20,7 @@ class UserRegister(BaseModel):
         except EmailNotValidError as e:
             raise ValueError("email field: " + str(e))
 
-    @validator("password")
+    @field_validator("password")
     def valid_password(cls, v):
         if len(v) < 8 :
             raise ValueError("password length must have at least 8 characters")

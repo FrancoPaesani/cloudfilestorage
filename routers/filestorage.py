@@ -7,6 +7,7 @@ from sqlmodel import Session
 
 from config.database import get_session
 from decorators.auth import validate_login
+from decorators.cloudProvider import load_cloud_providers
 from models.auth import User
 from models.filestorage import CloudProvider, UserFiles, UserStorage
 from schemas.filestorage import UserStats
@@ -16,7 +17,7 @@ from services.user import UserStorageService
 file_storage_router = APIRouter(prefix="/fs", tags=["File Storage"])
 
 
-@file_storage_router.post("/file/", dependencies=[Depends(validate_login)])
+@file_storage_router.post("/file/", dependencies=[Depends(validate_login), Depends(load_cloud_providers)])
 def upload(
     request: Request,
     file_path: str,
@@ -39,7 +40,7 @@ def upload(
 
     file_info.file_path = "/" + user.user + "/" + file_info.file_path
 
-    result_cloud: UserFiles = StorageService().upload_file(
+    result_cloud: UserFiles = StorageService(request.state.providers).upload_file(
         file=file_info, user_id=user.id
     )
 
@@ -68,6 +69,7 @@ def stats(request: Request, session: Session = Depends(get_session)):
                 cloud_provider_id=x[0].cloud_provider_id,
                 cloud_provider_name=x[1].name,
                 occupied_size=x[0].occupied_size,
+                year_month=x[0].year_month
             ),
             storage_per_user_cloud,
         )

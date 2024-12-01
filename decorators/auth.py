@@ -5,7 +5,6 @@ from fastapi import Cookie, Depends, HTTPException, Request
 from sqlmodel import Session
 
 from config.database import get_session
-from models.auth import User
 from services.auth import SessionService
 from services.user import UserService
 
@@ -26,5 +25,6 @@ def validate_login(
     if datetime.now() > session_db.expires_date:
         raise HTTPException(status_code=403, detail="Session expired")
 
-    user = UserService().get_user_from_session(session_cfs_tkn_ath, session)
+    user = UserService().get_user_from_id(session_db.user_id, session)
+    print(user)
     request.state.user = user

@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from fastapi import HTTPException
@@ -30,24 +31,27 @@ class UserService:
         ).first()
         return user_session_db
 
-    def get_user_from_session(self, jwt_content: str, session: Session) -> User:
-        user_session_db, user_db = session.exec(
-            select(UserSession, User).where(
-                User.id == UserSession.user_id and UserSession.jwt == jwt_content
+    def get_user_from_id(self, user_id: int, session: Session) -> User:
+        user_db = session.exec(
+            select(User).where(
+                User.id == user_id
             )
         ).first()
         return user_db
 
 
 class UserStorageService:
-    def get_storage_occupied(self, user: User, session: Session):
+    def get_storage_occupied_actual_month(self, user: User, session: Session):
+        now = datetime.now()
+        ymonth = now.year*100+now.month
+
         result = session.exec(
             select(func.sum(UserStorage.occupied_size).label("occupied")).where(
-                UserStorage.user_id == user.id
+                UserStorage.user_id == user.id and UserStorage.year_month == ymonth
             )
         ).first()
-
-        return 0.0 if result is None else result
+        
+        return Decimal(0.0) if result is None else result
 
     def get_storage_per_user(self, session: Session):
         return session.exec(
@@ -77,6 +81,6 @@ class UserStorageService:
     def validate_storage_limit(
         self, user: User, file_size: Decimal, session: Session
     ) -> bool:
-        actual_occupied = self.get_storage_occupied(user, session)
+        actual_occupied = self.get_storage_occupied_actual_month(user, session)
 
         return (actual_occupied + file_size) >= user.max_storage_size_mb

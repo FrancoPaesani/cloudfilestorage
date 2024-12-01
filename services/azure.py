@@ -25,7 +25,7 @@ class AzureService(CloudProviderService):
             permission=AccountSasPermissions(
                 read=True, write=True, update=True, list=True
             ),
-            expiry=datetime.now() + timedelta(minutes=10),  # TODO: parametrizar x env
+            expiry=datetime.now() + timedelta(minutes=10),
         )
 
     def upload_file(self, file_path: str, file_content: bytes):
@@ -38,4 +38,4 @@ class AzureService(CloudProviderService):
 
         result = blob.upload_blob(file_content)
         blob.close()
-        return 2  # TODO: traer de la DB el codigo del CP
+        return "AZURE"

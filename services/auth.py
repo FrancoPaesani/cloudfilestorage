@@ -15,7 +15,7 @@ class SessionService:
     def generate_jwt(self, user: str):
         expires_date = datetime.now(timezone.utc) + timedelta(hours=1)
         jwt_content = jwt.encode(
-            {"user": user, "expires_date": expires_date.strftime("%Y%m%d % H:%M:%S")},
+            {"user": user, "expires_date": expires_date.strftime("%Y%m%d %H:%M:%S")},
             key=AUTH_JWT_KEY,
             algorithm="HS256",
         )
@@ -25,6 +25,7 @@ class SessionService:
         session_db = session.exec(
             select(UserSession).where(UserSession.jwt == jwt_content)
         ).first()
+
         return session_db
 
     def save_session(self, user_session: UserSession, session: Session):

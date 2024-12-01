@@ -2,7 +2,7 @@ from decimal import Decimal
 import re
 
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
 class FileInfo(BaseModel):
@@ -12,7 +12,7 @@ class FileInfo(BaseModel):
     file_extension: str
     file_content: bytes
 
-    @validator("file_path")
+    @field_validator("file_path")
     def validate_path(cls, v):
         if v == '':
             return v
@@ -22,7 +22,7 @@ class FileInfo(BaseModel):
         else: 
             raise ValueError("Invalid path")
     
-    @validator("file_name")
+    @field_validator("file_name")
     def validate_name(cls, v):
         pattern = r'^[a-zA-Z0-9]+\.[a-zA-Z0-9]+$'
         if bool(re.match(pattern, v)):
@@ -36,3 +36,4 @@ class UserStats(BaseModel):
     cloud_provider_id: int
     cloud_provider_name: str
     occupied_size: Decimal
+    year_month: int
